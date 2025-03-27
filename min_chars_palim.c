@@ -1,41 +1,55 @@
-// C program for counting minimum character to be
-// added at front to make string palindrome
 #include <stdio.h>
-#include <stdbool.h>
 #include <string.h>
 
-// Function to check if the substring s[i...j] is a palindrome
-bool isPalindrome(char s[], int i, int j) {
-    while (i < j) {
-        
-        // If characters at the ends are not the same, it's not a palindrome
-        if (s[i] != s[j]) {
-            return false;
+// Function to compute the LPS array for KMP algorithm
+void computeLPSArray(char *str, int M, int *lps) {
+    int length = 0;
+    lps[0] = 0;
+    int i = 1;
+    
+    while (i < M) {
+        if (str[i] == str[length]) {
+            length++;
+            lps[i] = length;
+            i++;
+        } else {
+            if (length != 0) {
+                length = lps[length - 1];
+            } else {
+                lps[i] = 0;
+                i++;
+            }
         }
-        i++;
-        j--;
     }
-    return true;
 }
 
-int minChar(char s[]) {
-    int cnt = 0;
-    int i = strlen(s) - 1;
+// Function to find minimum characters to add at the front
+int minCharsToAdd(char *str) {
+    int n = strlen(str);
     
-    // Iterate from the end of the string, checking for the 
-    // longest palindrome starting from the beginning
-    while (i >= 0 && !isPalindrome(s, 0, i)) {
-        
-        i--;
-        cnt++;
+    // Create a new string: str + "$" + reverse(str)
+    char temp[2 * n + 2];
+    strcpy(temp, str);
+    strcat(temp, "$");
+    
+    // Reverse the string and append
+    for (int i = 0; i < n; i++) {
+        temp[n + 1 + i] = str[n - 1 - i];
     }
+    temp[2 * n + 1] = '\0';
     
-    return cnt;
+    // Compute LPS array for the concatenated string
+    int lps[2 * n + 1];
+    computeLPSArray(temp, 2 * n + 1, lps);
+    
+    // Minimum characters to add at front = length of original string - LPS last value
+    return n - lps[2 * n];
 }
 
+// Driver code
 int main() {
-    char s[] = "AACECAAAA";    
-    printf("%d", minChar(s));
+    char str[] = "AACECAAAA";
+    printf("Minimum characters to add: %d\n", minCharsToAdd(str));
     return 0;
 }
 
